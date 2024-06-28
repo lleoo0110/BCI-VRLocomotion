@@ -8,12 +8,13 @@ using UnityEngine.UI;
 
 public class TrainingManager : MonoBehaviour
 {
-    public GameObject cube; // �L���[�u�̃Q�[���I�u�W�F�N�g
+    public GameObject xrHMD;
+    public float runSpeed;
     public float restDuration; // 安静期間
     public float instructionDuration; // 指示期間
     public float crossDuration; // 合図期間
-    public float moveDuration; // イメージ想起期間
-    public float moveSpeed; // オブジェクトの移動速度
+    public float imageryDuration; // イメージ想起期間
+    private Vector3 initialPosition;
 
     public Canvas canvas;
     public Text text;
@@ -30,6 +31,7 @@ public class TrainingManager : MonoBehaviour
     private void Start()
     {
         udpClient = new UdpClient();
+        initialPosition = xrHMD.transform.position;
     }
 
     private void Update()
@@ -44,39 +46,38 @@ public class TrainingManager : MonoBehaviour
 
     private IEnumerator RunTraining()
     {
-        // isTaskRunning = true;
         while (true)
         {
             // ここを繰り返す
             yield return StartCoroutine(Neutral());
-            yield return StartCoroutine(PushCube());
-            yield return StartCoroutine(PullCube());
+            yield return StartCoroutine(Imagery());
         }
     }
 
     private IEnumerator Neutral()
     {
         UnityEngine.Debug.Log("Neutral started.");
-
         stopwatch = Stopwatch.StartNew();
-        Vector3 startPosition = new Vector3(0, 1, 2.5f); // �X�^�[�g�ʒu���w��
-        Vector3 direction = new Vector3(0, 0, 0); // �ړ��������w��
-    cube.transform.position = startPosition;
+        xrHMD.transform.position = initialPosition; // 初期位置に戻す
+
+        // テキストウィンドウ設定
+        verticalLine.SetActive(false);
+        horizontalLine.SetActive(false);
+        canvas.gameObject.SetActive(true);
+        text.gameObject.SetActive(false);
+
         // 安静期間
-        // ウィンドウ出す（白い画面）
-        // Canvas ON
         canvas.gameObject.SetActive(true);
         text.gameObject.SetActive(false);
         yield return new WaitForSeconds(restDuration);
 
         // 指示期間
-        // ウィンドウにイメージの指示を表示
         text.gameObject.SetActive(true);
-        text.text = "静止";
+        text.text = "Neutral";
         UnityEngine.Debug.Log("Stay still.");
         yield return new WaitForSeconds(instructionDuration);
 
-        // ウィンドウに十字の合図を表示
+        // 合図期間
         text.gameObject.SetActive(false);
         verticalLine.SetActive(true);
         horizontalLine.SetActive(true);
@@ -84,160 +85,76 @@ public class TrainingManager : MonoBehaviour
         yield return new WaitForSeconds(crossDuration);
 
         // イメージ想起期間
-        // ここにプログラム Canvas OFF
         canvas.gameObject.SetActive(false);
         UnityEngine.Debug.Log("Staying still.");
-        StartCoroutine(MoveCube(startPosition, direction, true));
-        yield return new WaitForSeconds(moveDuration);
-
-        // �\���̍��}
-        canvas.gameObject.SetActive(true);
-        verticalLine.SetActive(true);
-        horizontalLine.SetActive(true);
-        UnityEngine.Debug.Log("Cross sign.");
-        cube.transform.position = startPosition;
-        yield return new WaitForSeconds(crossDuration);
-
-        // 
-        canvas.gameObject.SetActive(false);
-        UnityEngine.Debug.Log("Staying still.");
-        StartCoroutine(MoveCube(startPosition, direction, true));
-        yield return new WaitForSeconds(moveDuration);
+        StartCoroutine(Stay());
+        yield return new WaitForSeconds(imageryDuration);
 
         stopwatch.Stop();
         UnityEngine.Debug.Log("Neutral completed. Elapsed time: " + stopwatch.Elapsed.TotalSeconds + " seconds");
     }
 
-    private IEnumerator PushCube()
+    private IEnumerator Imagery()
     {
-        UnityEngine.Debug.Log(" startedPushCube.");
-
+        UnityEngine.Debug.Log("startedWalkImagery.");
         stopwatch = Stopwatch.StartNew();
-        Vector3 startPosition = new Vector3(0, 1, -5f); // �X�^�[�g�ʒu���w��
-        Vector3 direction = new Vector3(0, 0, 1); // �ړ��������w��
-        cube.transform.position = startPosition;
+        xrHMD.transform.position = initialPosition; // 初期位置に戻す
 
-        // ���Ï��
+        // テキストウィンドウ設定
         verticalLine.SetActive(false);
         horizontalLine.SetActive(false);
         canvas.gameObject.SetActive(true);
         text.gameObject.SetActive(false);
+
+        // 安静期間
         yield return new WaitForSeconds(restDuration);
 
-        // �C���[�W�w��
+        // 指示期間
         text.gameObject.SetActive(true);
-        text.text = "手前→奥";
-        UnityEngine.Debug.Log("Imagine the cube backwards.");
+        text.text = "Walk Imagery";
+        UnityEngine.Debug.Log("Instruction: Walk Imagery");
         yield return new WaitForSeconds(instructionDuration);
 
-        // �\���̍��}
+        // 合図期間
         text.gameObject.SetActive(false);
         verticalLine.SetActive(true);
         horizontalLine.SetActive(true);
         UnityEngine.Debug.Log("Cross sign.");
         yield return new WaitForSeconds(crossDuration);
 
-        // �L���[�u�����ɓ�����(������)
+        // イメージ想起期間
         canvas.gameObject.SetActive(false);
-        UnityEngine.Debug.Log("Moving the cube backwards with Sound.");
-        StartCoroutine(MoveCube(startPosition, direction, false));
-        yield return new WaitForSeconds(moveDuration);
-
-        // �\���̍��}
-        canvas.gameObject.SetActive(true);
-        verticalLine.SetActive(true);
-        horizontalLine.SetActive(true);
-        UnityEngine.Debug.Log("Cross sign.");
-        cube.transform.position = startPosition;
-        yield return new WaitForSeconds(crossDuration);
-
-        // �L���[�u�����ɓ�����(���Ȃ�)
-        verticalLine.SetActive(false);
-        horizontalLine.SetActive(false);
-        canvas.gameObject.SetActive(false);
-        UnityEngine.Debug.Log("Moving the cube backwards without Sound.");
-        StartCoroutine(MoveCube(startPosition, direction, true));
-        yield return new WaitForSeconds(moveDuration);
+        UnityEngine.Debug.Log("Walking Imagery.");
+        StartCoroutine(Locomotion());
+        yield return new WaitForSeconds(imageryDuration);
 
         stopwatch.Stop();
         UnityEngine.Debug.Log("PushCube completed. Elapsed time: " + stopwatch.Elapsed.TotalSeconds + " seconds");
     }
 
-    private IEnumerator PullCube()
-    {
-        UnityEngine.Debug.Log("PullCube started.");
-
-        stopwatch = Stopwatch.StartNew();
-        Vector3 startPosition = new Vector3(0, 1, 10f); // �X�^�[�g�ʒu���w��
-        Vector3 direction = new Vector3(0, 0, -1); // �ړ��������w��
-        cube.transform.position = startPosition;
-
-        // ���Ï
-        canvas.gameObject.SetActive(true);
-        text.gameObject.SetActive(false);
-        yield return new WaitForSeconds(restDuration);
-
-        // �C���[�W�w��
-        text.gameObject.SetActive(true);
-        text.text = "奥→手前";
-        UnityEngine.Debug.Log("Imagine moving the cube forwards.");
-        yield return new WaitForSeconds(instructionDuration);
-
-        // �\���̍��}
-        text.gameObject.SetActive(false);
-        verticalLine.SetActive(true);
-        horizontalLine.SetActive(true);
-        UnityEngine.Debug.Log("Cross sign.");
-        yield return new WaitForSeconds(crossDuration);
-
-        // �L���[�u�����ɓ�����(������)
-        canvas.gameObject.SetActive(false);
-        UnityEngine.Debug.Log("Moving the cube backwards with Sound.");
-        StartCoroutine(MoveCube(startPosition, direction, false));
-        yield return new WaitForSeconds(moveDuration);
-
-        // �\���̍��}
-        canvas.gameObject.SetActive(true);
-        verticalLine.SetActive(true);
-        horizontalLine.SetActive(true);
-        UnityEngine.Debug.Log("Cross sign.");
-        cube.transform.position = startPosition;
-        yield return new WaitForSeconds(crossDuration);
-
-        // �L���[�u�����ɓ�����(���Ȃ�)
-        verticalLine.SetActive(false);
-        horizontalLine.SetActive(false);
-        canvas.gameObject.SetActive(false);
-        UnityEngine.Debug.Log("Moving the cube backwards without Sound.");
-        StartCoroutine(MoveCube(startPosition, direction, true));
-        yield return new WaitForSeconds(moveDuration);
-
-        stopwatch.Stop();
-        UnityEngine.Debug.Log("PullCube. Elapsed time: " + stopwatch.Elapsed.TotalSeconds + " seconds");
-    }
-
-    private IEnumerator MoveCube(Vector3 startPosition, Vector3 direction, bool isMuted)
+    private IEnumerator Locomotion()
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        // �I�u�W�F�N�g�̉��̃~���[�g��ݒ�
-        AudioSource audioSource = cube.GetComponent<AudioSource>();
-        if (audioSource != null)
+        while (stopwatch.Elapsed.TotalSeconds < imageryDuration)
         {
-            audioSource.mute = isMuted;
-        }
-
-        cube.transform.position = startPosition;
-
-        while (stopwatch.Elapsed.TotalSeconds < moveDuration)
-        {
-            Vector3 movement = direction.normalized * moveSpeed * Time.deltaTime;
-            cube.transform.position += movement;
+            Vector3 movement = transform.forward * runSpeed * Time.deltaTime;
+            xrHMD.transform.position += movement;
             yield return null;
         }
+        stopwatch.Stop();
+    }
+    
+    private IEnumerator Stay()
+    {
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
 
-        audioSource.mute = true;
+        while (stopwatch.Elapsed.TotalSeconds < imageryDuration)
+        {
+            yield return null;
+        }
         stopwatch.Stop();
     }
 

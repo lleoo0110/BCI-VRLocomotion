@@ -53,8 +53,8 @@ public class LocomotionManager : MonoBehaviour
         xAxisDirection = headsetRotation * Vector3.right;
 
         // パラメータの更新
-        mentalaction = UDPReceiver.receivedInt;
-        eyeaction = EmotivUnityItf.EyeAction;
+        mentalAction = UDPReceiver.receivedInt;
+        eyeAction = EmotivUnityItf.EyeAction;
 
         if (eyeAction == "lookR" || dKey.wasPressedThisFrame)
         {
@@ -73,15 +73,25 @@ public class LocomotionManager : MonoBehaviour
     {
         // 現在のキーボード情報
         var current = Keyboard.current;
-        // wキーの入力状態取得
+        // キーの入力状態取得
         var wKey = current.wKey;
-        // 脳波入力
+        var sKey = current.sKey;
+        // 入力
         if (mentalAction == 2 || wKey.isPressed)
         {    
             // ヘッドセットの向いている方向に進む
             //transform.position += xAxisDirection * runSpeed * Time.deltaTime;
             //transform.position += forwardDirection * runSpeed * Time.deltaTime;
             transform.position += transform.forward * runSpeed * Time.deltaTime; 
+        }
+
+        // 入力
+        else if (sKey.isPressed)
+        {    
+            // ヘッドセットの向いている方向に進む
+            //transform.position += xAxisDirection * runSpeed * Time.deltaTime;
+            //transform.position += forwardDirection * runSpeed * Time.deltaTime;
+            transform.position -= transform.forward * runSpeed * Time.deltaTime; 
         }
     }
 
