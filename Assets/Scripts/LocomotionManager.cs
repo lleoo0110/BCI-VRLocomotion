@@ -1,132 +1,214 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using EmotivUnityPlugin;
-using UnityEngine.UI;
 using UnityEngine.XR;
-
+using InputDevice = UnityEngine.XR.InputDevice;
+using CommonUsages = UnityEngine.XR.CommonUsages;
 
 public class LocomotionManager : MonoBehaviour
 {
-    // メンタルコマンド・表情コマンド
-    private int mentalAction;
-    private string eyeAction;
-
-    // パラメータ
+    [Header("Movement Parameters")]
     public float runSpeed;
     public int lookThreshold;
     public float rotationCooldown;
-    public float rotationAngle; // 回転角度
-    
-    private Vector3 initialPosition;  // 初期位置
-    private bool isWalking = false;  // 歩いているかどうか
+    public float rotationAngle;
+
+    private int mentalAction;
+    private string eyeAction;
+    private bool isInputEnabled = true;
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
     private float lastRotationTime;
     private int lookRightCount;
     private int lookLeftCount;
 
-    // ヘッドセット情報
-    Quaternion headsetRotation;
-    Vector3 xAxisDirection;
+    private Vector2 leftStick;
+    private Vector2 rightStick;
 
+    private UnityEngine.XR.InputDevice leftHand;
+    private UnityEngine.XR.InputDevice rightHand;
 
-    void Start()
+    private void Start()
     {
-        initialPosition = this.transform.position;  // 初期位置を保存
+        InitializePositionAndRotation();
+        InitializeXRDevices();
     }
 
-
-    void Update()
+    private void Update()
     {
-        // 現在のキーボード情報
-        var current = Keyboard.current;
-        // aキーの入力状態取得
-        var aKey = current.aKey;    
-        // sキーの入力状態取得
-        var sKey = current.sKey;
-        // dキーの入力状態取得
-        var dKey = current.dKey;
-        // スペースキーの入力状態取得
-        var spaceKey = current.spaceKey;
+        if (HandleResetInput()) return;
+        if (HandleToggleInput()) return;
+        if (!isInputEnabled) return;
 
-        headsetRotation = InputTracking.GetLocalRotation(XRNode.Head);
-        xAxisDirection = headsetRotation * Vector3.right;
+        UpdateInputs();
+        HandleRotation();
+        HandleLocomotion();
+    }
 
-        // パラメータの更新
+    private void InitializePositionAndRotation()
+    {
+        initialPosition = transform.position;
+        initialRotation = transform.rotation;
+    }
+
+    private void InitializeXRDevices()
+    {
+        leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+        rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+    }
+
+    private bool HandleResetInput()
+    {
+        if (Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            ResetObject();
+            return true;
+        }
+        return false;
+    }
+
+    private bool HandleToggleInput()
+    {
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            ToggleInput();
+            return true;
+        }
+        return false;
+    }
+
+    private void ToggleInput()
+    {
+        isInputEnabled = !isInputEnabled;
+        Debug.Log($"Input is {(isInputEnabled ? "enabled" : "disabled")}");
+    }
+
+    private void UpdateInputs()
+    {
         mentalAction = UDPReceiver.receivedInt;
         eyeAction = EmotivUnityItf.EyeAction;
 
-        if (eyeAction == "lookR" || dKey.wasPressedThisFrame)
+        UpdateControllerInputs();
+    }
+
+    private void UpdateControllerInputs()
+    {
+        leftHand.TryGetFeatureValue(CommonUsages.primary2DAxis, out leftStick);
+        rightHand.TryGetFeatureValue(CommonUsages.primary2DAxis, out rightStick);
+    }
+
+    private void HandleRotation()
+    {
+        if (ShouldRotateRight())
         {
             LookRightDetected();
         }
-
-        else if (eyeAction == "lookL" || aKey.wasPressedThisFrame)
+        else if (ShouldRotateLeft())
         {
             LookLeftDetected();
         }
-
-        Locomotion();
     }
 
-    void Locomotion()
+    private bool ShouldRotateRight()
     {
-        // 現在のキーボード情報
-        var current = Keyboard.current;
-        // キーの入力状態取得
-        var wKey = current.wKey;
-        var sKey = current.sKey;
-        // 入力
-        if (mentalAction == 2 || wKey.isPressed)
-        {    
-            // ヘッドセットの向いている方向に進む
-            //transform.position += xAxisDirection * runSpeed * Time.deltaTime;
-            //transform.position += forwardDirection * runSpeed * Time.deltaTime;
-            transform.position += transform.forward * runSpeed * Time.deltaTime; 
-        }
-
-        // 入力
-        else if (sKey.isPressed)
-        {    
-            // ヘッドセットの向いている方向に進む
-            //transform.position += xAxisDirection * runSpeed * Time.deltaTime;
-            //transform.position += forwardDirection * runSpeed * Time.deltaTime;
-            transform.position -= transform.forward * runSpeed * Time.deltaTime; 
-        }
+        return eyeAction == "lookR" || Keyboard.current.dKey.wasPressedThisFrame || rightStick.x > 0.1f;
     }
 
-    void LookRightDetected()
+    private bool ShouldRotateLeft()
+    {
+        return eyeAction == "lookL" || Keyboard.current.aKey.wasPressedThisFrame || rightStick.x < -0.1f;
+    }
+
+    private void HandleLocomotion()
+    {
+        Vector3 movement = CalculateMovement();
+        ApplyMovement(movement);
+    }
+
+    private Vector3 CalculateMovement()
+    {
+        Vector3 movement = Vector3.zero;
+
+        if (ShouldMoveForward())
+        {
+            movement += transform.forward;
+        }
+        else if (ShouldMoveBackward())
+        {
+            movement -= transform.forward;
+        }
+
+        return movement;
+    }
+
+    private bool ShouldMoveForward()
+    {
+        return mentalAction == 2 || Keyboard.current.wKey.isPressed || leftStick.y > 0.1f;
+    }
+
+    private bool ShouldMoveBackward()
+    {
+        return Keyboard.current.sKey.isPressed || leftStick.y < -0.1f;
+    }
+
+    private void ApplyMovement(Vector3 movement)
+    {
+        transform.position += movement.normalized * runSpeed * Time.deltaTime;
+    }
+
+    private void LookRightDetected()
     {
         lookRightCount++;
-        if ((lookRightCount >= lookThreshold) && (Time.time - lastRotationTime >= rotationCooldown))
+        if (CanRotate())
         {
             RotateR();
-            lookRightCount = 0;  // カウントをリセット
-            lookLeftCount = 0;
+            ResetLookCounts();
         }
     }
 
-    void RotateR()
-    {
-        transform.Rotate(0f, rotationAngle, 0f);
-        lastRotationTime = Time.time;
-    }
-
-    void LookLeftDetected()
+    private void LookLeftDetected()
     {
         lookLeftCount++;
-
-        if ((lookLeftCount >= lookThreshold) && (Time.time - lastRotationTime >= rotationCooldown))
+        if (CanRotate())
         {
             RotateL();
-            lookRightCount = 0; // カウントをリセット
-            lookLeftCount = 0;
+            ResetLookCounts();
         }
     }
 
-    void RotateL()
+    private bool CanRotate()
     {
-        transform.Rotate(0f, -rotationAngle, 0f);
+        return (lookRightCount >= lookThreshold || lookLeftCount >= lookThreshold) && 
+               (Time.time - lastRotationTime >= rotationCooldown);
+    }
+
+    private void RotateR()
+    {
+        Rotate(rotationAngle);
+    }
+
+    private void RotateL()
+    {
+        Rotate(-rotationAngle);
+    }
+
+    private void Rotate(float angle)
+    {
+        transform.Rotate(0f, angle, 0f);
         lastRotationTime = Time.time;
+    }
+
+    private void ResetLookCounts()
+    {
+        lookRightCount = 0;
+        lookLeftCount = 0;
+    }
+
+    private void ResetObject()
+    {
+        transform.position = initialPosition;
+        transform.rotation = initialRotation;
+        isInputEnabled = false;
+        Debug.Log("Object reset and input disabled");
     }
 }
