@@ -12,6 +12,7 @@ public class LocomotionManager : MonoBehaviour
     public int lookThreshold;
     public float rotationCooldown;
     public float rotationAngle;
+    public Camera headsetCamera; // ヘッドセットのカメラへの参照を追加
 
     private int mentalAction;
     private string eyeAction;
@@ -111,12 +112,12 @@ public class LocomotionManager : MonoBehaviour
 
     private bool ShouldRotateRight()
     {
-        return eyeAction == "lookR" || Keyboard.current.dKey.wasPressedThisFrame || rightStick.x > 0.1f;
+        return eyeAction == "lookR" || Keyboard.current.dKey.wasPressedThisFrame;
     }
 
     private bool ShouldRotateLeft()
     {
-        return eyeAction == "lookL" || Keyboard.current.aKey.wasPressedThisFrame || rightStick.x < -0.1f;
+        return eyeAction == "lookL" || Keyboard.current.aKey.wasPressedThisFrame;
     }
 
     private void HandleLocomotion()
@@ -131,29 +132,35 @@ public class LocomotionManager : MonoBehaviour
 
         if (ShouldMoveForward())
         {
-            movement += transform.forward;
+            // ヘッドセットの前方向を使用
+            movement += headsetCamera.transform.forward;
         }
         else if (ShouldMoveBackward())
         {
-            movement -= transform.forward;
+            // ヘッドセットの後ろ方向を使用
+            movement -= headsetCamera.transform.forward;
         }
 
-        return movement;
-    }
+        // 上下方向の動きを無視するために、Y成分を0に設定
+        movement.y = 0;
 
-    private bool ShouldMoveForward()
-    {
-        return mentalAction == 2 || Keyboard.current.wKey.isPressed || leftStick.y > 0.1f;
-    }
-
-    private bool ShouldMoveBackward()
-    {
-        return Keyboard.current.sKey.isPressed || leftStick.y < -0.1f;
+        return movement.normalized;
     }
 
     private void ApplyMovement(Vector3 movement)
     {
-        transform.position += movement.normalized * runSpeed * Time.deltaTime;
+        // 正規化された方向ベクトルを使用して移動
+        transform.position += movement * runSpeed * Time.deltaTime;
+    }
+
+    private bool ShouldMoveForward()
+    {
+        return mentalAction == 2 || Keyboard.current.wKey.isPressed;
+    }
+
+    private bool ShouldMoveBackward()
+    {
+        return Keyboard.current.sKey.isPressed;
     }
 
     private void LookRightDetected()

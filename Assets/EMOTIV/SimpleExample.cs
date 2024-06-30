@@ -8,8 +8,8 @@ public class SimpleExample : MonoBehaviour
 {
     
     // Please fill clientId and clientSecret of your application before starting
-    private string _clientId = "";
-    private string _clientSecret = "";
+    private string _clientId = "HlrA8woOnmrt8ARcjtd9OZEQpimgQsrOPRNUJmFO";
+    private string _clientSecret = "KpqhyihGLumrGBanr1mE3GHReJ2I8u3ev6F04G9cCS7FmFcVxYOByJjvySXfXXwEtyXEaJKFTkugBIdHVeN7TRv2ldyD9mQxSHqABe3vYILygJHTnQzUZpsd8UsC7v3R";
     private string _appName = "UnityApp";
     private string _appVersion = "3.3.0";
 

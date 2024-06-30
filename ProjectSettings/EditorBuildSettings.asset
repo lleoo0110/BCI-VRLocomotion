@@ -4,8 +4,20 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Practice.unity
+    guid: 4c245732110c840c8a3935ec46be579a
+  - enabled: 1
+    path: Assets/Scenes/Training.unity
+    guid: 5338c6a49e8d65d408ed4aab423e5bea
+  - enabled: 1
+    path: Assets/Scenes/ExperimentTask.unity
+    guid: f8e9f951df478449797cc329ba651ee4
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 4363f7391548e5d44a03fda24d1fd99a, type: 2}
+    com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: ce2de13f894fdec4b8917778c315e749, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: f1c29a0ef858b3345b5ec2f6580e14a0, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 9340fade3cfea644ab1221377634b861, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 038ce072f224cd74ea1ba2a4b5bef4b5, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 2b6cce17ede652d49942d14ac7a3306c, type: 2}
