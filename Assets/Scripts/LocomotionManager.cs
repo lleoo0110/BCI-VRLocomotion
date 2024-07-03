@@ -12,7 +12,7 @@ public class LocomotionManager : MonoBehaviour
     public int lookThreshold;
     public float rotationCooldown;
     public float rotationAngle;
-    public Camera headsetCamera; // ƒwƒbƒhƒZƒbƒg‚ÌƒJƒƒ‰‚Ö‚ÌQÆ‚ğ’Ç‰Á
+    public Camera headsetCamera; // ï¿½wï¿½bï¿½hï¿½Zï¿½bï¿½gï¿½ÌƒJï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ÌQï¿½Æ‚ï¿½Ç‰ï¿½
 
     private int mentalAction;
     private string eyeAction;
@@ -112,12 +112,12 @@ public class LocomotionManager : MonoBehaviour
 
     private bool ShouldRotateRight()
     {
-        return eyeAction == "lookR" || Keyboard.current.dKey.wasPressedThisFrame;
+        return eyeAction == "lookR" || eyeAction == "winkR" || Keyboard.current.dKey.wasPressedThisFrame;
     }
 
     private bool ShouldRotateLeft()
     {
-        return eyeAction == "lookL" || Keyboard.current.aKey.wasPressedThisFrame;
+        return eyeAction == "lookL" || eyeAction == "winkL" || Keyboard.current.aKey.wasPressedThisFrame;
     }
 
     private void HandleLocomotion()
@@ -132,16 +132,16 @@ public class LocomotionManager : MonoBehaviour
 
         if (ShouldMoveForward())
         {
-            // ƒwƒbƒhƒZƒbƒg‚Ì‘O•ûŒü‚ğg—p
+            // ï¿½wï¿½bï¿½hï¿½Zï¿½bï¿½gï¿½Ì‘Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½p
             movement += headsetCamera.transform.forward;
         }
         else if (ShouldMoveBackward())
         {
-            // ƒwƒbƒhƒZƒbƒg‚ÌŒã‚ë•ûŒü‚ğg—p
+            // ï¿½wï¿½bï¿½hï¿½Zï¿½bï¿½gï¿½ÌŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½p
             movement -= headsetCamera.transform.forward;
         }
 
-        // ã‰º•ûŒü‚Ì“®‚«‚ğ–³‹‚·‚é‚½‚ß‚ÉAY¬•ª‚ğ0‚Éİ’è
+        // ï¿½ã‰ºï¿½ï¿½ï¿½ï¿½ï¿½Ì“ï¿½ï¿½ï¿½ï¿½ğ–³ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚ÉAYï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0ï¿½Éİ’ï¿½
         movement.y = 0;
 
         return movement.normalized;
@@ -149,7 +149,7 @@ public class LocomotionManager : MonoBehaviour
 
     private void ApplyMovement(Vector3 movement)
     {
-        // ³‹K‰»‚³‚ê‚½•ûŒüƒxƒNƒgƒ‹‚ğg—p‚µ‚ÄˆÚ“®
+        // ï¿½ï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ÄˆÚ“ï¿½
         transform.position += movement * runSpeed * Time.deltaTime;
     }
 
