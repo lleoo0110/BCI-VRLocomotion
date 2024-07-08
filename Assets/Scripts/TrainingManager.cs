@@ -40,7 +40,6 @@ public class TrainingManager : MonoBehaviour
         {
             isTaskRunning = true;
             StartCoroutine(RunTraining());
-            SendData("Start");
         }
     }
 
@@ -87,6 +86,7 @@ public class TrainingManager : MonoBehaviour
         // イメージ想起期間
         canvas.gameObject.SetActive(false);
         UnityEngine.Debug.Log("Staying still.");
+        SendData("Neutral");
         StartCoroutine(Stay());
         yield return new WaitForSeconds(imageryDuration);
 
@@ -125,6 +125,7 @@ public class TrainingManager : MonoBehaviour
         // イメージ想起期間
         canvas.gameObject.SetActive(false);
         UnityEngine.Debug.Log("Walking Imagery.");
+        SendData("WalkImagery");
         StartCoroutine(Locomotion());
         yield return new WaitForSeconds(imageryDuration);
 
@@ -136,7 +137,6 @@ public class TrainingManager : MonoBehaviour
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
-
         while (stopwatch.Elapsed.TotalSeconds < imageryDuration)
         {
             Vector3 movement = transform.forward * runSpeed * Time.deltaTime;
@@ -150,7 +150,6 @@ public class TrainingManager : MonoBehaviour
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
-
         while (stopwatch.Elapsed.TotalSeconds < imageryDuration)
         {
             yield return null;

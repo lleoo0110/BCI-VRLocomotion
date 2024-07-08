@@ -633,7 +633,7 @@ namespace EmotivUnityPlugin
                                 data.UAct + ", upper act power " + data.UPow.ToString() + ", lower act: " +
                                 data.LAct + ", lower act power " + data.LPow.ToString() + ", time: " + data.Time.ToString();
             // print out data to console
-            UnityEngine.Debug.Log(dataText);
+            // UnityEngine.Debug.Log(dataText);
             // 表情データ
             EyeAction = data.EyeAct;
             UpperAction = data.UAct;

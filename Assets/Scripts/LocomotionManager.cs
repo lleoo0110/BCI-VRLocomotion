@@ -12,7 +12,7 @@ public class LocomotionManager : MonoBehaviour
     public int lookThreshold;
     public float rotationCooldown;
     public float rotationAngle;
-    public Camera headsetCamera; // �w�b�h�Z�b�g�̃J�����ւ̎Q�Ƃ�ǉ�
+    public Camera headsetCamera;
 
     private int mentalAction;
     private string eyeAction;
@@ -132,16 +132,13 @@ public class LocomotionManager : MonoBehaviour
 
         if (ShouldMoveForward())
         {
-            // �w�b�h�Z�b�g�̑O�������g�p
             movement += headsetCamera.transform.forward;
         }
         else if (ShouldMoveBackward())
         {
-            // �w�b�h�Z�b�g�̌��������g�p
             movement -= headsetCamera.transform.forward;
         }
 
-        // �㉺�����̓����𖳎����邽�߂ɁAY������0�ɐݒ�
         movement.y = 0;
 
         return movement.normalized;
@@ -149,7 +146,6 @@ public class LocomotionManager : MonoBehaviour
 
     private void ApplyMovement(Vector3 movement)
     {
-        // ���K�����ꂽ�����x�N�g�����g�p���Ĉړ�
         transform.position += movement * runSpeed * Time.deltaTime;
     }
 
@@ -191,12 +187,12 @@ public class LocomotionManager : MonoBehaviour
 
     private void RotateR()
     {
-        Rotate(rotationAngle);
+        Rotate(-rotationAngle);
     }
 
     private void RotateL()
     {
-        Rotate(-rotationAngle);
+        Rotate(rotationAngle);
     }
 
     private void Rotate(float angle)
